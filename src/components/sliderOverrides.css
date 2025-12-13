@@ -1,0 +1,26 @@
+/* No background at all */
+.slick-prev,
+.slick-next {
+  background: transparent !important; /* ✅ transparent */
+  width: 60px;   /* increase clickable area */
+  height: 60px;
+  z-index: 2;
+  border: none;  /* make sure no border */
+}
+
+/* Arrow icons only */
+.slick-prev:before,
+.slick-next:before {
+  font-size: 48px;   /* ✅ bigger arrow */
+  color: #000;       /* black arrow */
+  opacity: 1;        /* fully visible */
+}
+
+/* Positioning */
+.slick-prev {
+  left: 20px;   /* move inside from left */
+}
+
+.slick-next {
+  right: 20px;  /* move inside from right */
+}

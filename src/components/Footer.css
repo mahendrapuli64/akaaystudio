@@ -1,0 +1,86 @@
+/* src/Footer.css */
+
+.footer {
+  background: linear-gradient(180deg, #f8f8ff 0%, #ffffff 100%);
+  padding: 60px 0 30px;
+  color: #333;
+  position: relative;
+  margin-top: 80px;
+}
+
+.footer-logo img {
+  height: 60px;
+  margin-bottom: 1rem;
+}
+
+.footer-text {
+  max-width: 260px;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.footer-heading {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #6c63ff;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.5rem;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: #444;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover {
+  color: #6c63ff;
+}
+
+.footer-contact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.footer-social {
+  margin-top: 1rem;
+}
+
+.footer-social .MuiIconButton-root {
+  color: #6c63ff;
+  transition: transform 0.2s;
+}
+
+.footer-social .MuiIconButton-root:hover {
+  transform: scale(1.15);
+  color: #5a54e3;
+}
+
+.footer-bottom {
+  margin-top: 40px;
+  text-align: center;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 20px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+@media (max-width: 900px) {
+  .footer {
+    text-align: center;
+  }
+  .footer-contact {
+    justify-content: center;
+  }
+}
