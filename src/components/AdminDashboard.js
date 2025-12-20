@@ -18,8 +18,6 @@ import {
   TableRow,
   Paper,
   Collapse,
-  Dialog,
-  DialogContent,
   Select,
   MenuItem,
   Button,
@@ -34,12 +32,11 @@ import {
 } from "@mui/icons-material";
 import { getDetailsAPI, postDataApi } from "../Services/ApiServices";
 import { useNavigate } from "react-router-dom";
+import EventIcon from "@mui/icons-material/Event";
 
 export default function AdminDashboard() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openRow, setOpenRow] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [openImage, setOpenImage] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -77,12 +74,6 @@ export default function AdminDashboard() {
     };
     fetchBookingDetails();
   }, [navigate]);
-
-  // ✅ Image view handler
-  const handleImageClick = (image) => {
-    setSelectedImage(image);
-    setOpenImage(true);
-  };
 
   // ✅ WhatsApp: Booking Confirmation
   const sendWhatsAppConfirmation = (booking) => {
@@ -199,6 +190,13 @@ If you have any questions, contact us at *${contactNumber}*.
               <ListItemText primary="Dashboard" />
             </ListItem>
 
+            <ListItem button>
+              <ListItemIcon>
+                <EventIcon color="primary" />
+              </ListItemIcon>
+              <ListItemText primary="Offline Booking" />
+            </ListItem>
+
             <ListItem button onClick={handleLogout}>
               <ListItemIcon>
                 <LogoutIcon color="error" />
@@ -245,9 +243,6 @@ If you have any questions, contact us at *${contactNumber}*.
                     <b>Occasion</b>
                   </TableCell>
                   <TableCell>
-                    <b>Image</b>
-                  </TableCell>
-                  <TableCell>
                     <b>Amount</b>
                   </TableCell>
                   <TableCell>
@@ -283,23 +278,6 @@ If you have any questions, contact us at *${contactNumber}*.
                       <TableCell>{row.id}</TableCell>
                       <TableCell>{row.name}</TableCell>
                       <TableCell>{row.occasion}</TableCell>
-                      <TableCell>
-                        <img
-                          src={row.image}
-                          alt={row.name}
-                          style={{
-                            width: 60,
-                            height: 60,
-                            borderRadius: 8,
-                            cursor: "pointer",
-                            objectFit: "cover",
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleImageClick(row.image);
-                          }}
-                        />
-                      </TableCell>
                       <TableCell>{row.amount}</TableCell>
                       <TableCell>{row.date}</TableCell>
                       <TableCell>
@@ -396,23 +374,6 @@ If you have any questions, contact us at *${contactNumber}*.
       </Box>
 
       {/* ✅ Image Popup */}
-      <Dialog
-        open={openImage}
-        onClose={() => setOpenImage(false)}
-        maxWidth="md"
-      >
-        <DialogContent>
-          <img
-            src={selectedImage}
-            alt="Full view"
-            style={{
-              width: "100%",
-              height: "auto",
-              borderRadius: 10,
-            }}
-          />
-        </DialogContent>
-      </Dialog>
     </Box>
   );
 }

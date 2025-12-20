@@ -1,7 +1,9 @@
 import axios from "axios";
 
-const REST_API_BASE_URL =
-  "https://bonzer-goniometrical-queenie.ngrok-free.dev/asp/";
+// const REST_API_BASE_URL =
+//   "https://bonzer-goniometrical-queenie.ngrok-free.dev/asp/";
+
+const REST_API_BASE_URL = "http://192.168.22.122:8080/asp/";
 
 export const getDetailsAPI = async (url) => {
   try {
