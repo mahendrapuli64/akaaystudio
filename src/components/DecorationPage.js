@@ -10,7 +10,6 @@ import {
   Container,
   Box,
   Button,
-  CircularProgress,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import Footer from "./Footer";
@@ -18,6 +17,7 @@ import NavBar from "./NavBar";
 import { getDetailsAPI, postDataApi } from "../Services/ApiServices";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useLoader } from "./LoaderContext";
 
 // Individual decoration card
 const DecorationCard = ({ item, selected, onSelect }) => (
@@ -73,12 +73,13 @@ const DecorationCard = ({ item, selected, onSelect }) => (
 const DecorationPage = () => {
   const [selectedItems, setSelectedItems] = useState({});
   const [decorationSections, setDecorationSections] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { showLoader, hideLoader } = useLoader();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDecorations = async () => {
       try {
+        showLoader();
         const response = await getDetailsAPI("get-decoration");
         if (response.statusCode === 200 && Array.isArray(response.decoration)) {
           setDecorationSections(response.decoration);
@@ -89,7 +90,7 @@ const DecorationPage = () => {
       } catch (error) {
         console.error("Error fetching decorations:", error);
       } finally {
-        setLoading(false);
+        hideLoader();
       }
     };
     fetchDecorations();
@@ -121,8 +122,8 @@ const DecorationPage = () => {
         );
     });
 
-    if (selectedData.length === 0)
-      return toast.info("Please select at least one decoration.");
+    // if (selectedData.length === 0)
+    //   return toast.info("Please select at least one decoration.");
 
     try {
       const bookingId = sessionStorage.getItem("bookingId");
@@ -170,47 +171,40 @@ const DecorationPage = () => {
           Select the Decorations
         </Typography>
 
-        {loading ? (
-          <Box sx={{ textAlign: "center", mt: 10 }}>
-            <CircularProgress />
-            <Typography mt={2}>Loading decorations...</Typography>
-          </Box>
-        ) : (
-          decorationSections.map((section, index) => (
-            <Box key={section.id} sx={{ mb: 5 }}>
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
-                {section.title}{" "}
-                <Typography component="span" color="text.secondary">
-                  (optional)
-                </Typography>
+        {decorationSections.map((section, index) => (
+          <Box key={section.id} sx={{ mb: 5 }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              {section.title}{" "}
+              <Typography component="span" color="text.secondary">
+                (optional)
               </Typography>
+            </Typography>
 
-              <Grid container spacing={2}>
-                {section.items?.length > 0 ? (
-                  section.items.map((item) => (
-                    <Grid item xs={6} sm={4} md={2} key={item.id}>
-                      <DecorationCard
-                        item={item}
-                        selected={
-                          selectedItems[section.id]?.includes(item.id) || false
-                        }
-                        onSelect={() => handleSelect(section.id, item.id)}
-                      />
-                    </Grid>
-                  ))
-                ) : (
-                  <Typography color="text.secondary" sx={{ ml: 2 }}>
-                    No items available in this section.
-                  </Typography>
-                )}
-              </Grid>
-
-              {index < decorationSections.length - 1 && (
-                <Divider sx={{ my: 4 }} />
+            <Grid container spacing={2}>
+              {section.items?.length > 0 ? (
+                section.items.map((item) => (
+                  <Grid item xs={6} sm={4} md={2} key={item.id}>
+                    <DecorationCard
+                      item={item}
+                      selected={
+                        selectedItems[section.id]?.includes(item.id) || false
+                      }
+                      onSelect={() => handleSelect(section.id, item.id)}
+                    />
+                  </Grid>
+                ))
+              ) : (
+                <Typography color="text.secondary" sx={{ ml: 2 }}>
+                  No items available in this section.
+                </Typography>
               )}
-            </Box>
-          ))
-        )}
+            </Grid>
+
+            {index < decorationSections.length - 1 && (
+              <Divider sx={{ my: 4 }} />
+            )}
+          </Box>
+        ))}
 
         {Object.keys(selectedItems).length > 0 && (
           <Box sx={{ mt: 4 }}>

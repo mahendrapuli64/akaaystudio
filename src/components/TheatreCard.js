@@ -216,12 +216,12 @@ const TheatreCard = ({ theatre, date }) => {
                           ? "linear-gradient(135deg, #bb34a3, #5a24b3)"
                           : undefined,
                         color: isSelected
-                          ? "#fff"
+                          ? "#ff0000"
                           : isBooked
-                          ? "#fff"
+                          ? "#ff0000"
                           : "#58145e",
                         boxShadow: isSelected
-                          ? "0 4px 15px rgba(187,52,163,0.4)"
+                          ? "0 4px 15px rgba(239, 9, 197, 0.4)"
                           : "none",
                         border: !isSelected ? "1px solid #bb34a3" : "none",
                         transition: "all 0.3s ease",

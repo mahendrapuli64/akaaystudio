@@ -29,7 +29,7 @@ export default function HeroBanner() {
           );
           setImages(imageUrls);
         } else {
-          console.error("API returned error or unexpected data:", response);
+          console.error("Unexpected API response:", response);
         }
       } catch (error) {
         console.error("Error fetching images:", error);
@@ -40,7 +40,7 @@ export default function HeroBanner() {
     };
 
     fetchImages();
-  }, [showLoader, hideLoader]);
+  }, []); // 👈 runs ONLY once
 
   // Rotate images every 9 seconds
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function HeroBanner() {
               value={selectedDate}
               onChange={(newValue) => setSelectedDate(newValue)}
               minDate={dayjs()}
-              inputFormat="dd/MM/YYYY" // <-- This sets the display format
+              format="DD/MM/YYYY" // <-- This sets the display format
               slotProps={{
                 textField: { variant: "outlined", fullWidth: true },
               }}
