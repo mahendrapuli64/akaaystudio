@@ -9,9 +9,12 @@ import {
   CardContent,
   Tooltip,
 } from "@mui/material";
+import dayjs from "dayjs";
 import { postDataApi } from "../Services/ApiServices";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 const BookingField = () => {
   const [bookingName, setBookingName] = useState("");
@@ -22,6 +25,9 @@ const BookingField = () => {
   const [totalPeopleFromBackend, setTotalPeopleFromBackend] = useState(0);
   const [extraPersonCharge, setExtraPersonCharge] = useState(0);
   const [extraCharges, setExtraCharges] = useState(0);
+  const [dateOfBirth, setdateOfBirth] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
 
   const navigate = useNavigate();
 
@@ -67,7 +73,13 @@ const BookingField = () => {
     const extra = Number(extraPeople);
     const totalSelected = base + extra;
 
-    if (!bookingName || !whatsapp || basePeopleInput === "") {
+    if (
+      !bookingName ||
+      !whatsapp ||
+      !email ||
+      !address ||
+      basePeopleInput === ""
+    ) {
       toast.info("Please fill all required fields.");
       return;
     }
@@ -82,6 +94,18 @@ const BookingField = () => {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      toast.info("Please enter a valid email address.");
+      return;
+    }
+
+    if (address.trim().length < 10) {
+      toast.info("Please enter a complete address.");
+      return;
+    }
+
     if (isNaN(base) || base < 0 || base > maxBasePeople) {
       toast.info(`Base people must be between 0 and ${maxBasePeople}.`);
       return;
@@ -89,7 +113,7 @@ const BookingField = () => {
 
     if (isNaN(extra) || extra < 0 || extra > totalPeopleFromBackend - base) {
       toast.info(
-        `Extra people must be between 0 and ${totalPeopleFromBackend - base}`
+        `Extra people must be between 0 and ${totalPeopleFromBackend - base}`,
       );
       return;
     }
@@ -106,6 +130,9 @@ const BookingField = () => {
       decorationCharges: savedTheatre.price,
       totalAmount: totalAmount(),
       bookingDate: savedTheatre.bookDate,
+      emailId: email,
+      address: address,
+      dateOfBirth: dateOfBirth,
       id: sessionStorage.getItem("bookingId"),
     };
 
@@ -135,11 +162,12 @@ const BookingField = () => {
     <Box
       display="flex"
       justifyContent="center"
-      alignItems="center"
+      alignItems="flex-start"
       sx={{
-        minHeight: "100vh",
+        pt: { xs: 10, md: 5 }, // padding top (space from header)
+        pb: { xs: 10, md: 5 }, // padding bottom (space from footer)
         backgroundColor: "#f7f7f7",
-        px: { xs: 2, md: 4 },
+        px: 2,
       }}
     >
       <Card
@@ -179,6 +207,50 @@ const BookingField = () => {
               const val = e.target.value;
               if (/^\d*$/.test(val) && val.length <= 10) setWhatsapp(val);
             }}
+            sx={{ mb: 3 }}
+          />
+
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label="Date of Birth *"
+              format="DD-MM-YYYY"
+              value={dateOfBirth ? dayjs(dateOfBirth, "DD-MM-YYYY") : null}
+              maxDate={dayjs()}
+              onChange={(newValue) => {
+                if (newValue) {
+                  setdateOfBirth(newValue.format("DD-MM-YYYY")); // store as DD-MM-YYYY
+                } else {
+                  setdateOfBirth("");
+                }
+              }}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  sx: { mb: 3 },
+                  placeholder: "Select your date of birth",
+                },
+              }}
+            />
+          </LocalizationProvider>
+
+          <TextField
+            fullWidth
+            label="Email ID *"
+            placeholder="Enter email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            sx={{ mb: 3 }}
+          />
+
+          <TextField
+            fullWidth
+            label="Address *"
+            placeholder="Enter complete address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            multiline
+            rows={3}
             sx={{ mb: 3 }}
           />
 

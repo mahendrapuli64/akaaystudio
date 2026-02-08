@@ -40,7 +40,7 @@ export default function GalleryPage() {
           }
         });
       },
-      { threshold: 0.2 }
+      { threshold: 0.2 },
     );
 
     refs.current.forEach((el) => {

@@ -15,6 +15,7 @@ import Footer from "./Footer";
 import { getDetailsAPI, postDataApi } from "../Services/ApiServices";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import AdminMenus from "./AdminMenus";
 
 function OccasionCard({ title, img, selected, onSelect }) {
   return (
@@ -111,9 +112,11 @@ function BookingOccasion() {
     }
   };
 
+  const islogin = localStorage.getItem("adminToken");
+
   return (
     <>
-      <NavBar />
+      {islogin === "ASP" ? <AdminMenus /> : <NavBar />}
       <Box sx={{ flexGrow: 1, px: { xs: 2, md: 6 }, py: { xs: 4, md: 6 } }}>
         <Typography
           variant="h4"
@@ -161,7 +164,7 @@ function BookingOccasion() {
         )}
 
         <TextField
-          label="Enter your nickname"
+          label="Enter your Celebration Name"
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           fullWidth

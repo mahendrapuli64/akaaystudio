@@ -203,7 +203,7 @@ const NavBar = () => {
                 <Button
                   variant="contained"
                   component="a"
-                  href="/book"
+                  href="/home"
                   startIcon={<CalendarTodayIcon />}
                   sx={{
                     ml: 4,

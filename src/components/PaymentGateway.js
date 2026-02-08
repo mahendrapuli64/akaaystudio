@@ -64,8 +64,10 @@ export default function PaymentPage() {
 
     try {
       const response = await postDataApi("create-order", {
-        // advanceAmount: bookingDetails.advanceAmount,
-        advanceAmount: "1",
+        advanceAmount: bookingDetails.advanceAmount,
+        totalAmount: bookingDetails.bookedTotalAmount,
+        balancedAmount: bookingDetails.bookedBalanceAmount,
+        // advanceAmount: "1",
         bookingId: bookingDetails.bookingId,
       });
 
@@ -295,10 +297,67 @@ export default function PaymentPage() {
                 }}
               >
                 <Typography variant="body1">
+                  <b>Theater:</b>
+                </Typography>
+                <Typography variant="body1">
+                  {bookingDetails.bookedTheater}
+                </Typography>
+              </Paper>
+
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: "#f7f7f7",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="body1">
+                  <b>Slot:</b>
+                </Typography>
+                <Typography variant="body1">
+                  {bookingDetails.bookedTime}
+                </Typography>
+              </Paper>
+
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: "#f7f7f7",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="body1">
                   <b>Occasion:</b>
                 </Typography>
                 <Typography variant="body1">
                   {bookingDetails.bookedOccasions}
+                </Typography>
+              </Paper>
+
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: "#f7f7f7",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="body1">
+                  <b>Celebration Name:</b>
+                </Typography>
+                <Typography variant="body1">
+                  {bookingDetails.bookedNickName}
                 </Typography>
               </Paper>
 

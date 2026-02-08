@@ -25,7 +25,7 @@ export default function HeroBanner() {
 
         if (response?.statusCode === 200 && Array.isArray(response.homeCard)) {
           const imageUrls = response.homeCard.map(
-            (item) => `data:image/jpeg;base64,${item.image}`
+            (item) => `data:image/jpeg;base64,${item.image}`,
           );
           setImages(imageUrls);
         } else {

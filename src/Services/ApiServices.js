@@ -3,9 +3,9 @@ import axios from "axios";
 // const REST_API_BASE_URL =
 //   "https://bonzer-goniometrical-queenie.ngrok-free.dev/asp/";
 
-// const REST_API_BASE_URL = "http://157.15.234.157:8080/asp/";
+const REST_API_BASE_URL = "http://157.15.234.157:8080/asp/";
 
-const REST_API_BASE_URL = "/api/asp/";
+// const REST_API_BASE_URL = "http://localhost:8080/asp/";
 
 export const getDetailsAPI = async (url) => {
   try {
@@ -17,7 +17,7 @@ export const getDetailsAPI = async (url) => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
     return response.data; // return only the data
   } catch (error) {

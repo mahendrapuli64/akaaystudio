@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
 import { toast } from "react-toastify";
+import AdminMenus from "./AdminMenus";
 
 const colors = {
   primaryText: "#58145e",
@@ -30,15 +31,26 @@ const TermsCondition = () => {
   const handleSubmit = () => {
     if (!checked) {
       return toast.info(
-        "Please agree to the terms & conditions before continuing."
+        "Please agree to the terms & conditions before continuing.",
       );
     }
     navigate("/paymentgateway");
   };
 
+  const handleoffline = () => {
+    if (!checked) {
+      return toast.info(
+        "Please agree to the terms & conditions before continuing.",
+      );
+    }
+    navigate("/offlinePayment");
+  };
+  const islogin = localStorage.getItem("adminToken");
+
   return (
     <>
-      <NavBar />
+      {islogin === "ASP" ? <AdminMenus /> : <NavBar />}
+
       <Container maxWidth="md" sx={{ py: 5 }}>
         <Paper
           elevation={6}
@@ -80,7 +92,7 @@ const TermsCondition = () => {
               "Carrying Aadhaar card is mandatory.",
               "Couples under 18 are NOT allowed to book.",
               "Pets are not allowed inside the theatre.",
-              "₹10 advance will be charged. Remaining before event.",
+              "₹1000 advance will be charged. Remaining before event.",
               "Cleaning fee up to ₹500 may apply for heavy cleaning.",
             ].map((item, index) => (
               <ListItem
@@ -147,28 +159,53 @@ const TermsCondition = () => {
           </Box>
 
           {/* Continue Button */}
-          <Button
-            variant="contained"
-            fullWidth
-            disabled={!checked}
-            onClick={handleSubmit}
-            sx={{
-              mt: 2,
-              py: 1.3,
-              fontWeight: 700,
-              borderRadius: 3,
-              background: colors.primaryGrad,
-              "&:hover": {
-                background: colors.hoverGrad,
-              },
-              "&.Mui-disabled": {
-                opacity: 0.6,
-                background: "#c085c3",
-              },
-            }}
-          >
-            Continue
-          </Button>
+          {islogin === "ASP" ? (
+            <Button
+              variant="contained"
+              fullWidth
+              disabled={!checked}
+              onClick={handleoffline}
+              sx={{
+                mt: 2,
+                py: 1.3,
+                fontWeight: 700,
+                borderRadius: 3,
+                background: colors.primaryGrad,
+                "&:hover": {
+                  background: colors.hoverGrad,
+                },
+                "&.Mui-disabled": {
+                  opacity: 0.6,
+                  background: "#c085c3",
+                },
+              }}
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              fullWidth
+              disabled={!checked}
+              onClick={handleSubmit}
+              sx={{
+                mt: 2,
+                py: 1.3,
+                fontWeight: 700,
+                borderRadius: 3,
+                background: colors.primaryGrad,
+                "&:hover": {
+                  background: colors.hoverGrad,
+                },
+                "&.Mui-disabled": {
+                  opacity: 0.6,
+                  background: "#c085c3",
+                },
+              }}
+            >
+              Continue
+            </Button>
+          )}
         </Paper>
       </Container>
       <Footer />

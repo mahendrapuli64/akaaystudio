@@ -16,6 +16,8 @@ import AdminDashboard from "./components/AdminDashboard";
 import PaymentPage from "./components/PaymentGateway";
 import Toaster from "./components/Toaster";
 import TermsCondition from "./components/TermsCondition";
+import OfflineBooking from "./components/OfflineBooking";
+import PhonePeScannerPayment from "./components/PhonePeScannerPayment";
 
 function App() {
   return (
@@ -35,11 +37,12 @@ function App() {
             <Route path="/bookingform" element={<BookingForm />} />
             <Route path="/bookingoccastion" element={<BookingOccasion />} />
             <Route path="/decoration" element={<DecorationPage />} />
-            {/* <Route path="/payment" element={<PhonePeScannerPayment />} /> */}
+            <Route path="/offlinePayment" element={<PhonePeScannerPayment />} />
             <Route path="/paymentgateway" element={<PaymentPage />} />
             <Route path="/admin/adminlogin" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/terms-condition" element={<TermsCondition />} />
+            <Route path="/admin/offlinebook" element={<OfflineBooking />} />
           </Routes>
         </Router>
       </SelectedSlotProvider>

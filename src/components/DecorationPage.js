@@ -18,6 +18,7 @@ import { getDetailsAPI, postDataApi } from "../Services/ApiServices";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useLoader } from "./LoaderContext";
+import AdminMenus from "./AdminMenus";
 
 // Individual decoration card
 const DecorationCard = ({ item, selected, onSelect }) => (
@@ -75,6 +76,7 @@ const DecorationPage = () => {
   const [decorationSections, setDecorationSections] = useState([]);
   const { showLoader, hideLoader } = useLoader();
   const navigate = useNavigate();
+  const islogin = localStorage.getItem("adminToken");
 
   useEffect(() => {
     const fetchDecorations = async () => {
@@ -118,7 +120,7 @@ const DecorationPage = () => {
             id: item.id,
             name: item.title,
             price: item.price,
-          })
+          }),
         );
     });
 
@@ -160,7 +162,7 @@ const DecorationPage = () => {
 
   return (
     <>
-      <NavBar />
+      {islogin === "ASP" ? <AdminMenus /> : <NavBar />}
       <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
         <Typography
           variant="h5"

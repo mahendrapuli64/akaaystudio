@@ -15,23 +15,21 @@ import {
 } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PeopleIcon from "@mui/icons-material/People";
-import FastfoodIcon from "@mui/icons-material/Fastfood";
-import CancelIcon from "@mui/icons-material/Cancel";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { useNavigate, useLocation } from "react-router-dom";
 import { postDataApi } from "../Services/ApiServices";
 import { toast } from "react-toastify";
 
-// Icon wrapper with circle
+// Circle Icon Component
 const IconWithCircle = ({ icon, bg }) => (
   <Avatar
     sx={{
       bgcolor: bg,
-      width: 30,
-      height: 30,
+      width: 34,
+      height: 34,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      fontSize: 16,
     }}
   >
     {icon}
@@ -48,12 +46,13 @@ const TheatreCard = ({ theatre, date }) => {
       theatre.expiredSlots.includes(slot)
     )
       return;
+
     setSelectedSlot((prev) => (prev === slot ? "" : slot));
   };
 
   const handleBookNow = () => {
     if (!selectedSlot) {
-      toast.info("please select a slot before booking!");
+      toast.info("Please select a slot before booking!");
       return;
     }
 
@@ -68,22 +67,20 @@ const TheatreCard = ({ theatre, date }) => {
           maxPeople: theatre.maxPeople,
           totalPeople: theatre.totalPeople,
           bookDate: date,
-        })
+        }),
       );
-      toast.success("Theater is selected", {
-        autoClose: 2000, // duration in ms
-        onClose: () => {
+
+      toast.success("Theater Selected", {
+        autoClose: 1500,
+        onClose: () =>
           navigate("/bookingform", {
             state: { theatre, slot: selectedSlot, date },
-          });
-        },
+          }),
       });
     } else {
-      toast.info("Date is not selected. Redirecting to Home page.!", {
-        autoClose: 2000, // duration in ms
-        onClose: () => {
-          navigate("/home");
-        },
+      toast.info("Please select a date first!", {
+        autoClose: 1500,
+        onClose: () => navigate("/home"),
       });
     }
   };
@@ -95,38 +92,42 @@ const TheatreCard = ({ theatre, date }) => {
   return (
     <Card
       sx={{
-        width: 380, // Increased width
-        margin: "auto",
+        width: 390,
+        borderRadius: "22px",
+        overflow: "hidden",
         mb: 4,
-        borderRadius: 4,
-        boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
-        transition: "transform 0.3s, box-shadow 0.3s",
-        "&:hover": {
-          transform: "translateY(-5px)",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-        },
+        boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+        background: "#ffffff",
+        transition: "0.3s ease",
+        "&:hover": { transform: "translateY(-6px)" },
       }}
     >
-      {/* Image */}
+      {/* CARD IMAGE */}
       <Box sx={{ position: "relative" }}>
         <CardMedia
           component="img"
-          height="180"
+          height="260"
           image={`data:image/jpeg;base64,${theatre.image}`}
           alt={theatre.name}
-          sx={{ objectFit: "cover" }}
+          sx={{
+            width: "100%",
+            objectFit: "cover",
+          }}
         />
+
         <Chip
           label={theatre.type}
           sx={{
             position: "absolute",
-            top: 10,
-            right: 10,
-            color: "#fff",
+            top: 15,
+            right: 15,
             background: "linear-gradient(135deg, #bb34a3, #5a24b3)",
+            color: "#fff",
             fontWeight: "bold",
+            borderRadius: "10px",
           }}
         />
+
         {allSlotsBooked && (
           <Box
             sx={{
@@ -135,14 +136,13 @@ const TheatreCard = ({ theatre, date }) => {
               left: 0,
               width: "100%",
               height: "100%",
-              bgcolor: "rgba(187,52,163,0.7)",
+              bgcolor: "rgba(90,36,179,0.55)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               color: "#fff",
-              fontWeight: "bold",
-              fontSize: 24,
-              borderRadius: 4,
+              fontSize: 28,
+              fontWeight: 700,
             }}
           >
             Fully Booked
@@ -150,41 +150,50 @@ const TheatreCard = ({ theatre, date }) => {
         )}
       </Box>
 
-      {/* Details */}
-      <CardContent>
+      {/* CONTENT */}
+      <CardContent sx={{ padding: "22px" }}>
+        {/* Title */}
         <Typography
-          variant="h6"
-          sx={{ fontWeight: "bold", color: "#58145e", mb: 1 }}
+          variant="h5"
+          sx={{ fontWeight: 700, color: "#4b006e", mb: 2 }}
         >
           {theatre.name}
         </Typography>
 
-        {/* Top Row: Food, People, Cancel */}
-        <Stack direction="row" spacing={1} mb={1}>
-          <IconWithCircle
-            icon={<FastfoodIcon fontSize="small" />}
-            bg="#10b981"
-          />
-          <Typography variant="caption">Food & Drinks</Typography>
-          <IconWithCircle icon={<PeopleIcon fontSize="small" />} bg="#3b82f6" />
-          <Typography variant="caption">Max {theatre.maxPeople}</Typography>
-          <IconWithCircle icon={<CancelIcon fontSize="small" />} bg="#ef4444" />
-          <Typography variant="caption">Free Cancel</Typography>
+        {/* Icons Row */}
+        <Stack direction="row" spacing={3} mb={3}>
+          {/* Max People */}
+          <Stack direction="row" spacing={1} alignItems="center">
+            <IconWithCircle icon={<PeopleIcon />} bg="#7c3aed" />
+            <Typography variant="body2" fontWeight={600}>
+              Max {theatre.maxPeople}
+            </Typography>
+          </Stack>
+
+          {/* Duration */}
+          <Stack direction="row" spacing={1} alignItems="center">
+            <IconWithCircle icon={<AccessTimeIcon />} bg="#ec4899" />
+            <Typography variant="body2" fontWeight={600}>
+              Duration: 2.5 Hours
+            </Typography>
+          </Stack>
         </Stack>
 
-        {/* Bottom Row: Location */}
-        <Stack direction="row" alignItems="center" spacing={1} mb={1}>
-          <IconWithCircle
-            icon={<LocationOnIcon fontSize="small" />}
-            bg="#fbbf24"
-          />
+        {/* Location */}
+        <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+          <IconWithCircle icon={<LocationOnIcon />} bg="#fbbf24" />
           <Typography variant="body2">{theatre.location}</Typography>
         </Stack>
 
-        {/* Slots */}
-        <Typography variant="body2" mt={2} sx={{ fontWeight: 500 }}>
+        {/* Time Slot Label */}
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 600, mt: 2, color: "#4b006e" }}
+        >
           Select Time Slot:
         </Typography>
+
+        {/* Slots */}
         <Grid container spacing={1} mt={1}>
           {theatre.slots.map((slot, index) => {
             const isBooked = theatre.bookedSlots.includes(slot);
@@ -195,8 +204,8 @@ const TheatreCard = ({ theatre, date }) => {
             let tooltipText = isBooked
               ? "Booked"
               : isExpired
-              ? "Expired"
-              : "Available";
+                ? "Expired"
+                : "Available";
 
             return (
               <Grid item xs={4} key={index}>
@@ -205,36 +214,27 @@ const TheatreCard = ({ theatre, date }) => {
                     <Chip
                       label={slot}
                       clickable={!disabled}
-                      onClick={() => handleSlotClick(slot)}
                       disabled={disabled}
+                      onClick={() => handleSlotClick(slot)}
                       variant={isSelected ? "filled" : "outlined"}
                       sx={{
                         width: "100%",
-                        textAlign: "center",
-                        fontWeight: isSelected ? "bold" : "500",
+                        fontWeight: 600,
+                        borderRadius: "12px",
+                        borderColor: "#b026ff",
                         background: isSelected
                           ? "linear-gradient(135deg, #bb34a3, #5a24b3)"
-                          : undefined,
-                        color: isSelected
-                          ? "#ff0000"
-                          : isBooked
-                          ? "#ff0000"
-                          : "#58145e",
-                        boxShadow: isSelected
-                          ? "0 4px 15px rgba(239, 9, 197, 0.4)"
-                          : "none",
-                        border: !isSelected ? "1px solid #bb34a3" : "none",
-                        transition: "all 0.3s ease",
+                          : "#fff",
+                        color: isSelected ? "#fff" : "#4b006e",
                         "&:hover": {
-                          transform: !disabled ? "scale(1.05)" : "none",
+                          transform: !disabled ? "scale(1.07)" : "none",
                         },
                         ...(isBooked && {
                           textDecoration: "line-through",
-                          opacity: 0.6,
+                          opacity: 0.5,
                         }),
                         ...(isExpired && { opacity: 0.5 }),
-                        borderRadius: 2,
-                        paddingY: 0.8,
+                        transition: "0.25s",
                       }}
                     />
                   </span>
@@ -244,25 +244,32 @@ const TheatreCard = ({ theatre, date }) => {
           })}
         </Grid>
 
-        {/* Price + Book Now */}
-        <Typography variant="h6" mt={2} sx={{ color: "#58145e" }}>
+        {/* Price */}
+        <Typography
+          variant="h5"
+          sx={{ mt: 3, fontWeight: 700, color: "#4b006e" }}
+        >
           ₹{theatre.price}
         </Typography>
+
+        {/* Book Now */}
         <Button
           variant="contained"
           fullWidth
+          onClick={handleBookNow}
+          disabled={allSlotsBooked}
           sx={{
             mt: 2,
             background: "linear-gradient(135deg, #bb34a3, #5a24b3)",
-            color: "#fff",
-            fontWeight: "bold",
             textTransform: "none",
+            paddingY: 1.4,
+            fontSize: 16,
+            fontWeight: 700,
+            borderRadius: "14px",
             "&:hover": {
               background: "linear-gradient(135deg, #d147c9, #7a2fd4)",
             },
           }}
-          disabled={allSlotsBooked}
-          onClick={handleBookNow}
         >
           Book Now
         </Button>
@@ -271,6 +278,7 @@ const TheatreCard = ({ theatre, date }) => {
   );
 };
 
+// MAIN LIST
 const TheatreList = () => {
   const [theatres, setTheatres] = useState([]);
   const location = useLocation();
@@ -282,20 +290,19 @@ const TheatreList = () => {
         const response = await postDataApi("getpackages", {
           bookingDate: date,
         });
+
         if (response.statusCode === 200) {
           setTheatres(response.theaters || []);
-        } else {
-          console.error("API returned error:", response);
         }
-      } catch (error) {
-        console.error("Error fetching theatre data:", error);
+      } catch (e) {
+        console.error("Error:", e);
       }
     };
     fetchTheatres();
   }, [date]);
 
   return (
-    <Box sx={{ flexGrow: 1, padding: { xs: 2, md: 4 } }}>
+    <Box sx={{ padding: { xs: 2, md: 4 } }}>
       <Grid container spacing={3} justifyContent="center">
         {theatres.length > 0 ? (
           theatres.map((theatre, index) => (
@@ -306,7 +313,8 @@ const TheatreList = () => {
         ) : (
           <Typography
             variant="h6"
-            sx={{ mt: 4, color: "#58145e", textAlign: "center" }}
+            textAlign="center"
+            sx={{ width: "100%", mt: 5, color: "#4b006e" }}
           >
             No theatres available for the selected date.
           </Typography>

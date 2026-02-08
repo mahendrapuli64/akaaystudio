@@ -15,9 +15,9 @@ import "./sliderOverrides.css"; // custom arrow styles
 
 const services = [
   { title: "Photoshoot", img: "/Photoshoot.jpg", bestSeller: true },
-  { title: "Gifts", img: "Gift.jpg" },
-  { title: "Cake", img: "Cake.jpg" },
-  { title: "Fog Entry", img: "FogEntry.png" },
+  { title: "Gifts", img: "/Gift.jpg" },
+  { title: "Cake", img: "/Cake.jpg" },
+  { title: "Fog Entry", img: "/FogEntry.png" },
 ];
 
 export default function Services() {

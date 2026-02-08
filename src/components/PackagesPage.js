@@ -5,11 +5,13 @@ import Footer from "./Footer";
 import Celebration from "./Celebration";
 import TheatreList from "./TheatreCard";
 import { Box, Typography } from "@mui/material";
+import AdminMenus from "./AdminMenus";
 
 const PackagesPage = () => {
+  const islogin = localStorage.getItem("adminToken");
   return (
     <>
-      <NavBar />
+      {islogin === "ASP" ? <AdminMenus /> : <NavBar />}
 
       <main
         style={{
@@ -38,7 +40,7 @@ const PackagesPage = () => {
               mb: 2,
             }}
           >
-            Discover Our Exclusive Packages
+            Our Decore Will Be Changes In Every 15 to 20 Days
           </Typography>
           <Typography
             variant="body1"

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { TextField, InputAdornment } from "@mui/material";
 import {
   Box,
   Card,
@@ -7,157 +8,101 @@ import {
   Button,
   Stack,
   Divider,
+  Chip,
+  Paper,
 } from "@mui/material";
-import { QRCodeCanvas } from "qrcode.react";
 import Footer from "./Footer";
-import NavBar from "./NavBar";
-import { postDataApi, postImage } from "../Services/ApiServices";
+import AdminMenus from "./AdminMenus";
+import { postDataApi } from "../Services/ApiServices";
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-export default function BookingPaymentSummary() {
-  const [upiUrl, setUpiUrl] = useState("");
+export default function PhonePeScannerPayment() {
   const [bookingDetails, setBookingDetails] = useState(null);
   const [bookingExp, setBookingExp] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const upiId = "dattapuli7777@oksbi";
-  const businessName = "Akaay Studio";
+  const CONVENIENCE_CHARGE = 26; // Fixed 26 deduction
 
-  // ✅ Fetch booking details from API
+  // Fetch booking details
   useEffect(() => {
     const fetchBookingDetails = async () => {
       try {
         const bookingId = sessionStorage.getItem("bookingId");
-        if (!bookingId) {
-          console.warn("No booking ID found in sessionStorage");
-          setLoading(false);
-          return;
-        }
+        if (!bookingId) return setLoading(false);
 
         const response = await postDataApi("get-bookingDetails", {
           id: bookingId,
         });
 
         if (response.statusCode === 200 && response.bookedDetails) {
-          setBookingDetails(response.bookedDetails);
+          // Deduct convenience charge on total amount immediately
+          const totalAmount =
+            Number(response.bookedDetails.bookedTotalAmount || 0) -
+            CONVENIENCE_CHARGE;
+          const advanceAmount = 0; // reset to zero
+          const balanceAmount = totalAmount - advanceAmount;
+
+          const detailsWithZeroAdvance = {
+            ...response.bookedDetails,
+            advanceAmount: advanceAmount,
+            bookedTotalAmount: totalAmount, // overwrite totalAmount with -26
+            balanceAmount: balanceAmount > 0 ? balanceAmount : 0,
+          };
+
+          setBookingDetails(detailsWithZeroAdvance);
           setBookingExp(response.bookedExpenses || []);
-        } else {
-          console.error("API returned error:", response);
         }
       } catch (error) {
         console.error("Error fetching booking details:", error);
+        toast.error("Error fetching booking details");
       } finally {
         setLoading(false);
       }
     };
-
     fetchBookingDetails();
   }, []);
 
-  // ✅ Generate UPI link when details are loaded
-  useEffect(() => {
-    if (bookingDetails?.advanceAmount) {
-      const uri = `upi://pay?pa=${encodeURIComponent(
-        upiId
-      )}&pn=${encodeURIComponent(businessName)}&am=${encodeURIComponent(
-        bookingDetails.advanceAmount
-      )}&cu=INR`;
-      setUpiUrl(uri);
-    }
-  }, [bookingDetails]);
-
-  // ✅ Handle file upload
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setSelectedFile(file);
-    if (file && file.type.startsWith("image/")) {
-      setPreviewUrl(URL.createObjectURL(file));
-    } else {
-      setPreviewUrl(null);
-    }
-  };
-
-  // ✅ Submit uploaded file to backend
-  const handleSubmit = async () => {
-    if (!selectedFile || !bookingDetails) {
-      alert("Please select a file before submitting!");
-      return;
-    }
-
-    setSubmitting(true);
+  // ===== Handle Booking Button Click =====
+  const handleBooking = async () => {
     try {
-      const formData = new FormData();
-      formData.append("bookingId", bookingDetails.bookingId);
-      formData.append("totalAmount", bookingDetails.bookedTotalAmount);
-      formData.append("balancedAmount", bookingDetails.bookedBalanceAmount);
-      formData.append("advanceAmount", bookingDetails.advanceAmount);
-      formData.append("file", selectedFile);
+      const totalAmount = Number(bookingDetails.bookedTotalAmount || 0);
+      const advanceAmount =
+        bookingDetails.advanceAmount === ""
+          ? 0
+          : Number(bookingDetails.advanceAmount);
+      const balanceAmount = totalAmount - advanceAmount;
 
-      const response = await postImage("upload-paymentProof", formData);
+      const bookingData = {
+        bookingId: bookingDetails.bookingId,
+        advanceAmount: advanceAmount,
+        totalAmount: totalAmount,
+        balancedAmount: balanceAmount > 0 ? balanceAmount : 0,
+      };
+
+      console.log("Booking Data:", bookingData);
+
+      const response = await postDataApi("offlineBooking", bookingData);
 
       if (response.statusCode === 200) {
-        alert(
-          "✅ File uploaded successfully!\n\nYour booking is now *in processing*.\n\nWe will verify your payment proof, and you will receive a WhatsApp message from *Akkay Studio* within 2 hours regarding your booking status"
-        );
-        setSelectedFile(null);
-        setPreviewUrl(null);
-        navigate("/");
+        toast.success("Booking saved successfully!");
+        setTimeout(() => {
+          navigate("/admin/dashboard");
+        }, 2000);
       } else {
-        alert("Failed to upload file. Please try again.");
+        toast.error("Failed to save booking. Please try again.");
       }
     } catch (error) {
-      console.error("Error uploading file:", error);
-      alert("An error occurred while uploading.");
-    } finally {
-      setSubmitting(false);
+      console.error("Error saving booking:", error);
+      toast.error("Error occurred while saving booking.");
     }
   };
-
-  // ✅ Send WhatsApp confirmation
-  //   const sendWhatsAppConfirmation = () => {
-  //     if (!bookingDetails) return;
-
-  //     const phoneNumber = "919356718212"; // Replace dynamically if possible
-  //     const message = `Hello ${bookingDetails.bookingName}, your booking for *${bookingDetails.bookedOccasions}* on *${bookingDetails.bookedDate}* has been confirmed! ✅
-
-  // Advance payment of ₹${bookingDetails.advanceAmount} received successfully.
-
-  // Thank you for choosing ${businessName}!`;
-
-  //     const encodedMessage = encodeURIComponent(message);
-  //     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-  //     window.open(whatsappUrl, "_blank");
-  //   };
-
-  //   const sendWhatsAppFailed = () => {
-  //     if (!bookingDetails) return;
-
-  //     const phoneNumber = "919356718212"; // Replace dynamically if possible
-  //     const message = `⚠️ *Booking Failed*
-
-  // Hello ${bookingDetails.bookingName},
-
-  // We regret to inform you that your booking (ID: *${bookingDetails.bookingId}*) for *${bookingDetails.bookedOccasions}* on *${bookingDetails.bookedDate}* could not be confirmed due to *non-receipt of payment*. 💸
-
-  // Please complete your payment to confirm your booking.
-
-  // If you have any questions or need help, feel free to contact us at: *${contactNumber}*
-
-  // – *${businessName}* Team`;
-
-  //     const encodedMessage = encodeURIComponent(message);
-  //     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-  //     window.open(whatsappUrl, "_blank");
-  //   };
 
   if (loading) {
     return (
       <>
-        <NavBar />
+        <AdminMenus />
         <Box
           sx={{
             minHeight: "100vh",
@@ -178,7 +123,7 @@ export default function BookingPaymentSummary() {
   if (!bookingDetails) {
     return (
       <>
-        <NavBar />
+        <AdminMenus />
         <Box
           sx={{
             minHeight: "100vh",
@@ -196,36 +141,45 @@ export default function BookingPaymentSummary() {
     );
   }
 
+  // ===== Calculations =====
+  const totalAmount = Number(bookingDetails.bookedTotalAmount || 0);
+  const advanceAmount =
+    bookingDetails.advanceAmount === ""
+      ? 0
+      : Number(bookingDetails.advanceAmount);
+  const balanceAmount = totalAmount - advanceAmount;
+
   return (
     <>
-      <NavBar />
+      <AdminMenus />
       <Box
         sx={{
           minHeight: "100vh",
-          background: "#f5f7fa",
+          background: "#f0f2f5",
           display: "flex",
-          alignItems: "center",
           justifyContent: "center",
+          alignItems: "center",
           p: 3,
         }}
       >
         <Card
           sx={{
-            width: 900,
+            width: { xs: "100%", md: 900 },
             borderRadius: 4,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-            p: 2,
+            boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+            p: { xs: 2, md: 4 },
+            background: "linear-gradient(135deg, #fff, #fdfdfd)",
+            transition: "transform 0.3s",
+            "&:hover": { transform: "translateY(-3px)" },
           }}
         >
           <CardContent>
             <Typography
               variant="h5"
-              sx={{
-                fontWeight: 700,
-                color: "#1e88e5",
-                mb: 1,
-                textAlign: "center",
-              }}
+              fontWeight="bold"
+              color="#bb34a3"
+              textAlign="center"
+              mb={1}
             >
               Booking Summary & Advance Payment
             </Typography>
@@ -233,188 +187,176 @@ export default function BookingPaymentSummary() {
             <Typography
               variant="body2"
               color="text.secondary"
-              sx={{ mb: 2, textAlign: "center" }}
+              textAlign="center"
+              mb={3}
             >
-              Please scan and pay the advance amount to confirm your booking.
-              Advance is non-refundable.
+              Confirm your booking by paying the advance amount.
             </Typography>
 
             <Divider sx={{ mb: 3 }} />
 
-            {/* ✅ Booking Details */}
-            <Stack spacing={1.2} sx={{ mb: 3 }}>
-              <Typography variant="body1">
-                <b>Booking ID:</b> {bookingDetails.bookingId}
-              </Typography>
-              <Typography variant="body1">
-                <b>Name:</b> {bookingDetails.bookingName}
-              </Typography>
-              <Typography variant="body1">
-                <b>Occasion:</b> {bookingDetails.bookedOccasions}
-              </Typography>
-              <Typography variant="body1">
-                <b>Date:</b> {bookingDetails.bookedDate}
-              </Typography>
+            <Stack spacing={1.5} mb={3}>
+              <Paper sx={paperStyle}>
+                <Typography>
+                  <b>Booking ID:</b>
+                </Typography>
+                <Typography>{bookingDetails.bookingId}</Typography>
+              </Paper>
+
+              <Paper sx={paperStyle}>
+                <Typography>
+                  <b>Name:</b>
+                </Typography>
+                <Typography>{bookingDetails.bookingName}</Typography>
+              </Paper>
+
+              <Paper sx={paperStyle}>
+                <Typography>
+                  <b>Theater:</b>
+                </Typography>
+                <Typography>{bookingDetails.bookedTheater}</Typography>
+              </Paper>
+
+              <Paper sx={paperStyle}>
+                <Typography>
+                  <b>Slot:</b>
+                </Typography>
+                <Typography>{bookingDetails.bookedTime}</Typography>
+              </Paper>
+
+              <Paper sx={paperStyle}>
+                <Typography>
+                  <b>Occasion:</b>
+                </Typography>
+                <Typography>{bookingDetails.bookedOccasions}</Typography>
+              </Paper>
+
+              <Paper sx={paperStyle}>
+                <Typography>
+                  <b>Celebration Name:</b>
+                </Typography>
+                <Typography>{bookingDetails.bookedNickName}</Typography>
+              </Paper>
+
+              <Paper sx={paperStyle}>
+                <Typography>
+                  <b>Date:</b>
+                </Typography>
+                <Typography>{bookingDetails.bookedDate}</Typography>
+              </Paper>
 
               {bookingExp.length > 0 && (
-                <>
+                <Box>
                   <Typography
-                    variant="h6"
-                    sx={{ mt: 2, mb: 1, fontWeight: 600, color: "#1e88e5" }}
+                    variant="subtitle1"
+                    fontWeight={600}
+                    color="#bb34a3"
+                    mt={2}
+                    mb={1}
                   >
                     Included Expenses
                   </Typography>
-                  {bookingExp.map((expense, index) => (
-                    <Typography key={index} variant="body1" sx={{ ml: 2 }}>
-                      • {expense.name} — ₹{expense.price}
-                    </Typography>
-                  ))}
-                </>
-              )}
-
-              <Typography variant="body1">
-                <b>Total Amount:</b> ₹{bookingDetails.bookedTotalAmount}
-              </Typography>
-              <Typography variant="body1" color="primary">
-                <b>Advance Required:</b> ₹{bookingDetails.advanceAmount}
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                <b>Balance:</b> ₹{bookingDetails.bookedBalanceAmount}
-              </Typography>
-            </Stack>
-
-            <Divider sx={{ mb: 3 }} />
-
-            {/* ✅ QR Code */}
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                mb: 3,
-              }}
-            >
-              <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
-                Scan to Pay (PhonePe / GPay / Paytm)
-              </Typography>
-
-              {upiUrl && <QRCodeCanvas value={upiUrl} size={220} />}
-
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mt: 1, textAlign: "center" }}
-              >
-                UPI ID: {upiId}
-              </Typography>
-            </Box>
-
-            <Divider sx={{ mb: 3 }} />
-
-            {/* ✅ Upload Payment Proof */}
-            <Box
-              sx={{
-                textAlign: "center",
-                mb: 3,
-                border: "1px dashed #ccc",
-                borderRadius: 2,
-                p: 2,
-              }}
-            >
-              <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
-                Upload Payment Proof
-              </Typography>
-
-              <input
-                accept="image/jpeg"
-                type="file"
-                id="file-upload"
-                style={{ display: "none" }}
-                onChange={handleFileChange}
-              />
-              <label htmlFor="file-upload">
-                <Button
-                  variant="contained"
-                  component="span"
-                  sx={{
-                    backgroundColor: "#1976d2",
-                    color: "#fff",
-                    "&:hover": { backgroundColor: "#115293" },
-                  }}
-                >
-                  Choose File
-                </Button>
-              </label>
-
-              {selectedFile && (
-                <>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    Selected: {selectedFile.name}
-                  </Typography>
-                  {previewUrl && (
-                    <Box
-                      sx={{
-                        mt: 2,
-                        display: "flex",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        style={{
-                          width: 200,
-                          height: "auto",
-                          borderRadius: 8,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                        }}
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    {bookingExp.map((expense, idx) => (
+                      <Chip
+                        key={idx}
+                        label={`${expense.name} — ₹${expense.price}`}
+                        color="primary"
+                        variant="outlined"
                       />
-                    </Box>
-                  )}
-                </>
+                    ))}
+                  </Box>
+                </Box>
               )}
-            </Box>
 
-            {/* ✅ Action Buttons */}
-            <Stack spacing={2}>
-              {/* <Button
-                variant="outlined"
-                fullWidth
-                onClick={sendWhatsAppConfirmation}
-                sx={{
-                  borderColor: "#25D366",
-                  color: "#25D366",
-                  "&:hover": { backgroundColor: "#25D366", color: "#fff" },
-                  py: 1.2,
-                  fontWeight: 600,
-                }}
-              >
-                Send WhatsApp Confirmation
-              </Button> */}
+              {/* Advance */}
+              <Paper sx={highlightPaperStyle}>
+                <Typography fontWeight={600} color="#bb34a3">
+                  Advance Required:
+                </Typography>
 
-              <Button
-                variant="contained"
-                fullWidth
-                disabled={submitting}
-                onClick={handleSubmit}
-                sx={{
-                  py: 1.2,
-                  fontWeight: 600,
-                  backgroundColor: "#1e88e5",
-                  "&:hover": { backgroundColor: "#1565c0" },
-                }}
-              >
-                {submitting ? "Uploading..." : "Submit Payment Proof"}
-              </Button>
+                <TextField
+                  type="number"
+                  placeholder="Enter advance"
+                  value={
+                    bookingDetails.advanceAmount === 0
+                      ? ""
+                      : bookingDetails.advanceAmount
+                  }
+                  onChange={(e) => {
+                    const val = e.target.value;
+
+                    if (val === "") {
+                      setBookingDetails({
+                        ...bookingDetails,
+                        advanceAmount: "",
+                      });
+                      return;
+                    }
+
+                    const numVal = Number(val);
+                    setBookingDetails({
+                      ...bookingDetails,
+                      advanceAmount: numVal < 0 ? 0 : numVal,
+                    });
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">₹</InputAdornment>
+                    ),
+                  }}
+                />
+              </Paper>
+
+              {/* Total Amount */}
+              <Paper sx={paperStyle}>
+                <Typography>
+                  <b>Total Amount:</b>
+                </Typography>
+                <Typography>₹{totalAmount}</Typography>
+              </Paper>
+
+              {/* Balance */}
+              <Paper sx={paperStyle}>
+                <Typography>
+                  <b>Balance:</b>
+                </Typography>
+                <Typography>
+                  ₹{balanceAmount > 0 ? balanceAmount : 0}
+                </Typography>
+              </Paper>
             </Stack>
+
+            <Divider sx={{ mb: 3 }} />
+
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={handleBooking}
+              sx={{
+                py: 1.5,
+                fontWeight: 600,
+                borderRadius: 3,
+                background: "linear-gradient(135deg, #bb34a3 0%, #5a24b3 100%)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #d147c9 0%, #7a2fd4 100%)",
+                },
+                boxShadow: "0 6px 20px rgba(187,52,163,0.3)",
+                transition: "all 0.3s ease",
+              }}
+            >
+              Booking
+            </Button>
 
             <Typography
               variant="caption"
               color="text.secondary"
               display="block"
-              sx={{ textAlign: "center", mt: 2 }}
+              textAlign="center"
+              mt={2}
             >
-              Booking will be confirmed only after successful advance payment.
+              Convenience charges of ₹26 already deducted.
             </Typography>
           </CardContent>
         </Card>
@@ -423,3 +365,21 @@ export default function BookingPaymentSummary() {
     </>
   );
 }
+
+const paperStyle = {
+  p: 2,
+  borderRadius: 2,
+  bgcolor: "#f7f7f7",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+};
+
+const highlightPaperStyle = {
+  p: 2,
+  borderRadius: 2,
+  bgcolor: "#fff0f6",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+};
