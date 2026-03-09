@@ -79,13 +79,13 @@ export default function AdminDashboard() {
       } catch (error) {
         console.error("Error fetching decorations:", error);
       } finally {
-        hideLoader();
+        hideLoader(); // hide loader after API finishes
         setLoading(false);
       }
     };
 
     fetchBookingDetails();
-  }, [navigate]); // ✅ IMPORTANT
+  }, [navigate, showLoader, hideLoader]);
 
   const sendWhatsAppConfirmation = (booking) => {
     const message = `Hello ${booking.name} 👋,
